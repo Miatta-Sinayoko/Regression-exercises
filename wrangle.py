@@ -1,15 +1,27 @@
+.
+import pandas as pd
+import numpy as np
+import os
+import seaborn as sns
+import sklearn.preprocessing
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from scipy import stats
+from pydataset import data
+from env import user, password, host
+
+
+#import ignore warnings
 import warnings
 warnings.filterwarnings("ignore")
-import os
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-import numpy as np
-import env
 
-from env import host, user, password
+
+
+##############################################   ACQUIRE     ##############################################
+
 
 # Read data from the zillow table in the zillow database on our mySQL server.
+from env import host, user, password
 
 def get_connection(db_name):
     
@@ -36,6 +48,9 @@ def get_zillow_data():
         # Return the dataframe to the calling code
         return df
     
+##############################################    CLEAN     ######################################################
+
+
 
 def wrangle_zillow():
     '''
@@ -44,8 +59,6 @@ def wrangle_zillow():
     drop any rows with Null values, convert all columns to int64,
     return cleaned zillow DataFrame.
     '''
-
-    # Acquire data
 
     zillow = get_zillow_data()
 
@@ -57,30 +70,50 @@ def wrangle_zillow():
     
     # Drop Unnamed: 0 column
     df = df.drop(columns = 'Unnamed: 0')
-
+    
     return df
+ ##############################################   TRAIN TEST VALIDATE   ##############################################
 
-def min_max_scaler(X_train, X_validate, X_test):
-    """
-    Scale the features in X_train, X_validate, and X_test using MinMaxScaler.
+
+def min_max_scaler(train, validate, test):
+    '''
+    Scale the features in train, validate, and test using MinMaxScaler.
 
     Args:
-        X_train (DataFrame): The training data.
-        X_validate (DataFrame): The validation data.
-        X_test (DataFrame): The test data.
+        train (DataFrame): The training data.
+        validate (DataFrame): The validation data.
+        test (DataFrame): The test data.
 
     Returns:
         scaler (object): The MinMaxScaler object.
-        X_train_scaled (DataFrame): The scaled training data.
-        X_validate_scaled (DataFrame): The scaled validation data.
-        X_test_scaled (DataFrame): The scaled test data.
-    """
+        train_scaled (DataFrame): The scaled training data.
+        validate_scaled (DataFrame): The scaled validation data.
+        test_scaled (DataFrame): The scaled test data.
+    '''
 
-    scaler = MinMaxScaler()
-    scaler.fit(X_train)
+    scaler = sklearn.preprocessing.MinMaxScaler()
+    scaler.fit(train)
 
-    X_train_scaled = scaler.transform(X_train)
-    X_validate_scaled = scaler.transform(X_validate)
-    X_test_scaled = scaler.transform(X_test)
+    train_scaled = pd.DataFrame(scaler.transform(train))
+    validate_scaled = pd.DataFrame(scaler.transform(validate))
+    test_scaled = pd.DataFrame(scaler.transform(test))
 
-    return X_train_scaled, X_validate_scaled, X_test_scaled
+    return train_scaled, validate_scaled, test_scaled
+
+##############################################   SPLIT   ############################################################
+
+
+def split_zillow(df):
+    '''This function splits the clean zillow data stratified on value'''
+    
+    
+  #train/validate/test split
+    
+   
+    train_validate, test = train_test_split(df, test_size = .2, random_state=311)
+
+    train, validate = train_test_split(train_validate, test_size = .25, random_state=311)
+
+    return train, validate, test
+
+
