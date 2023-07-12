@@ -1,4 +1,4 @@
-.
+
 import pandas as pd
 import numpy as np
 import os
@@ -8,8 +8,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from scipy import stats
 from pydataset import data
-from env import user, password, host
-
+ 
 
 #import ignore warnings
 import warnings
@@ -68,9 +67,23 @@ def wrangle_zillow():
     # Drop any rows with NaN values.
     df = zillow.dropna()
     
-    # Drop Unnamed: 0 column
-    df = df.drop(columns = 'Unnamed: 0')
+      #rename the columns
+    df = df.rename(columns={'bedroomcnt':'bedcount',
+                        'bathroomcnt':'bathcount',
+                        'calculatedfinishedsquarefeet': 'sqft',
+                        'taxvaluedollarcnt': 'tax_value',})
+
+    # change the dtype for the necessary columns
+    df['sqft'] = df.sqft.astype(int)
+
+    df['yearbuilt'] = df.yearbuilt.astype(int)
+
+    df['sqft'] = df.sqft.astype(int)
+
+    df['fips'] = df.fips.astype(int).astype(str)
+
     
+   
     return df
  ##############################################   TRAIN TEST VALIDATE   ##############################################
 
@@ -104,10 +117,10 @@ def min_max_scaler(train, validate, test):
 
 
 def split_zillow(df):
-    '''This function splits the clean zillow data stratified on value'''
+    '''This function splits the clean zillow data stratified on '''
     
     
-  #train/validate/test split
+  # train/validate/test split
     
    
     train_validate, test = train_test_split(df, test_size = .2, random_state=311)
